@@ -101,7 +101,9 @@ public class Partida implements Runnable {
         while (intentos > 0) {
             salida2.println("Palabra: " + String.valueOf(tablero));
             salida2.println("Intentos restantes: " + intentos);
-            switch(intentos) {
+
+            // Enviar el monigote actual al Jugador 2 según los intentos restantes
+            switch (intentos) {
                 case 8: break;
                 case 7: intentos7(salida2); break;
                 case 6: intentos6(salida2); break;
@@ -112,20 +114,29 @@ public class Partida implements Runnable {
                 case 1: intentos1(salida2); break;
                 case 0: intentos0(salida2); break;
             }
-            salida2.println("Ingresa una letra:");
 
-            String letra = entrada2.readLine();
+            // Pedirle a Jugador 2 que ingrese una letra
+            salida2.println("Ingresa una letra:");
+            String letra = entrada2.readLine();  // El Jugador 2 ingresa una letra
             salida1.println("Jugador 2 ingresó: " + letra + ". Corrige: 1 si está bien, 0 si está mal.");
-            int respuesta = Integer.parseInt(entrada1.readLine());
+            int respuesta = Integer.parseInt(entrada1.readLine());  // El Jugador 1 corrige
 
             if (respuesta == 1) {
-                salida1.println("Ingresa la posición de la letra (0-" + (longitud - 1) + "):");
-                int posicion = Integer.parseInt(entrada1.readLine());
-                tablero[posicion] = letra.charAt(0);
+                // Si la letra es correcta, el Jugador 1 ingresa la cantidad de ocurrencias de esa letra
+                salida1.println("¿Cuántas veces aparece esta letra en la palabra?");
+                int cantidad = Integer.parseInt(entrada1.readLine());
+
+                // El Jugador 1 ingresa las posiciones de la letra
+                for (int i = 0; i < cantidad; i++) {
+                    salida1.println("Ingresa la posición de la letra " + letra + " (0-" + (longitud - 1) + "):");
+                    int posicion = Integer.parseInt(entrada1.readLine());
+                    tablero[posicion] = letra.charAt(0);  // Colocamos la letra en las posiciones correctas
+                }
             } else {
-                intentos--;
+                intentos--;  // Solo reducimos los intentos si la letra es incorrecta
             }
 
+            // Si el tablero ya no tiene guiones bajos, el juego termina
             if (String.valueOf(tablero).indexOf('_') == -1) {
                 salida1.println("¡Jugador 2 ha ganado!");
                 salida2.println("¡Felicidades, has ganado!");
@@ -133,9 +144,11 @@ public class Partida implements Runnable {
             }
         }
 
+        // Si los intentos se agotaron, se termina el juego
         salida1.println("¡Jugador 2 ha perdido!");
         salida2.println("¡Has perdido!");
     }
+
 
     private void cerrarSocket(Socket socket) {
         try {
