@@ -52,6 +52,16 @@ public class Partida implements Runnable {
         while (intentos > 0) {
             salida.println("Palabra: " + String.valueOf(tablero));
             salida.println("Intentos restantes: " + intentos);
+            switch(intentos) {
+                case 8: break;
+                case 7: intentos7(salida); break;
+                case 6: intentos6(salida); break;
+                case 5: intentos5(salida); break;
+                case 4: intentos4(salida); break;
+                case 3: intentos3(salida); break;
+                case 2: intentos2(salida); break;
+                case 1: intentos1(salida); break;
+            }
 
             salida.println("Ingresa una letra:");
 
@@ -73,7 +83,7 @@ public class Partida implements Runnable {
                 return;
             }
         }
-        intentos1();
+        intentos0(salida);
         salida.println("¡Has perdido! La palabra era: " + palabra);
     }
 
@@ -91,24 +101,16 @@ public class Partida implements Runnable {
         while (intentos > 0) {
             salida2.println("Palabra: " + String.valueOf(tablero));
             salida2.println("Intentos restantes: " + intentos);
-            switch(intentos){
-                case 8:break;
-                case 7:intentos7();
-                        break;
-                case 6:intentos6();
-                    break;
-                case 5:intentos5();
-                    break;
-                case 4:intentos4();
-                    break;
-                case 3:intentos3();
-                    break;
-                case 2:intentos2();
-                    break;
-                case 1:intentos1();
-                    break;
-                default:
-                    System.out.println("MUERTO");
+            switch(intentos) {
+                case 8: break;
+                case 7: intentos7(salida2); break;
+                case 6: intentos6(salida2); break;
+                case 5: intentos5(salida2); break;
+                case 4: intentos4(salida2); break;
+                case 3: intentos3(salida2); break;
+                case 2: intentos2(salida2); break;
+                case 1: intentos1(salida2); break;
+                case 0: intentos0(salida2); break;
             }
             salida2.println("Ingresa una letra:");
 
@@ -143,78 +145,79 @@ public class Partida implements Runnable {
         }
     }
 
-    private void intentos7(){
-        System.out.println("|");
-        System.out.println("|");
-        System.out.println("|");
-        System.out.println("|");
-        System.out.println("|");
-        System.out.println("|");
+    private void intentos7(PrintWriter salida){
+        salida.println("|");
+        salida.println("|");
+        salida.println("|");
+        salida.println("|");
+        salida.println("|");
+        salida.println("|");
     }
 
-    private void intentos6(){
-        System.out.println("|------");
-        System.out.println("|");
-        System.out.println("|");
-        System.out.println("|");
-        System.out.println("|");
-        System.out.println("|");
+    private void intentos6(PrintWriter salida){
+        salida.println("|------");
+        salida.println("|");
+        salida.println("|");
+        salida.println("|");
+        salida.println("|");
+        salida.println("|");
     }
 
-    private void intentos5(){
-        System.out.println("|------");
-        System.out.println("|   |");
-        System.out.println("|");
-        System.out.println("|");
-        System.out.println("|");
-        System.out.println("|");
+    private void intentos5(PrintWriter salida){
+        salida.println("|------");
+        salida.println("|   |");
+        salida.println("|");
+        salida.println("|");
+        salida.println("|");
+        salida.println("|");
     }
 
-    private void intentos4(){
-        System.out.println("|------");
-        System.out.println("|   |");
-        System.out.println("| (^_^) ");
-        System.out.println("|");
-        System.out.println("|");
-        System.out.println("|");
+    private void intentos4(PrintWriter salida){
+        salida.println("|------");
+        salida.println("|   |");
+        salida.println("| (^_^) ");
+        salida.println("|");
+        salida.println("|");
+        salida.println("|");
     }
 
-    private void intentos3(){
-        System.out.println("|------");
-        System.out.println("|   |");
-        System.out.println("| (^_^) ");
-        System.out.println("|   |");
-        System.out.println("|");
-        System.out.println("|");
+    private void intentos3(PrintWriter salida){
+        salida.println("|------");
+        salida.println("|   |");
+        salida.println("| (^_^) ");
+        salida.println("|   |");
+        salida.println("|");
+        salida.println("|");
     }
 
-    private void intentos2(){
-        System.out.println("|------");
-        System.out.println("|   |");
-        System.out.println("| (^_^) ");
-        System.out.println("| º-|-º");
-        System.out.println("|");
-        System.out.println("|");
+    private void intentos2(PrintWriter salida){
+        salida.println("|------");
+        salida.println("|   |");
+        salida.println("| (^_^) ");
+        salida.println("| º-|-º");
+        salida.println("|");
+        salida.println("|");
     }
 
-    private void intentos1(){
-        System.out.println("|------");
-        System.out.println("|   |");
-        System.out.println("| (^_^) ");
-        System.out.println("| º-|-º");
-        System.out.println("|  /");
-        System.out.println("|");
-        System.out.println("¡¡¡ULTIMA OPORTUNIDAD!!!");
+    private void intentos1(PrintWriter salida){
+        salida.println("|------");
+        salida.println("|   |");
+        salida.println("| (^_^) ");
+        salida.println("| º-|-º");
+        salida.println("|  /");
+        salida.println("|");
+        salida.println("¡¡¡ULTIMA OPORTUNIDAD!!!");
     }
-    private void intentos0(){
-        System.out.println("|------");
-        System.out.println("|   |");
-        System.out.println("| (^_^) ");
-        System.out.println("| º-|-º");
-        System.out.println("|  / \\");
-        System.out.println("|");
 
+    private void intentos0(PrintWriter salida){
+        salida.println("|------");
+        salida.println("|   |");
+        salida.println("| (^_^) ");
+        salida.println("| º-|-º");
+        salida.println("|  / \\");
+        salida.println("|");
     }
+
 
 
 }

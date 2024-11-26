@@ -1,7 +1,7 @@
 import java.io.*;
 import java.net.*;
 
-public class ClienteAhorcado {
+public class ClienteConurrencia {
     private static final String HOST = "localhost";
     private static final int PUERTO = 12345;
 
