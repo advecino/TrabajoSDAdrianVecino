@@ -1,6 +1,7 @@
 import java.io.*;
 import java.net.*;
 
+//Cliente para probar varias partidas a la vez
 public class ClienteConurrencia {
     private static final String HOST = "localhost";
     private static final int PUERTO = 12345;

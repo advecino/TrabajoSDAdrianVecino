@@ -1,6 +1,7 @@
 import java.io.*;
 import java.net.*;
 
+//cliente que inicia la partida o elige contra la maquina
 public class ClienteAhorcado {
     private static final String HOST = "localhost";
     private static final int PUERTO = 12345;
