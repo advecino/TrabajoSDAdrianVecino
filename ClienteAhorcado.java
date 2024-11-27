@@ -27,32 +27,12 @@ public class ClienteAhorcado {
                 }
 
                 // Jugador 1 ingresa la longitud de la palabra
-                else if (mensaje.contains("Jugador 1, ingresa la longitud de la palabra:")) {
-                    System.out.print("Ingresa la longitud de la palabra: ");
-                    String longitud = teclado.readLine();
-                    salida.println(longitud); // Enviar longitud al servidor
-                }
-
-                // Jugador 1 ingresa la palabra
-                else if (mensaje.contains("Jugador 1, ahora ingresa la palabra.")) {
-                    System.out.print("Ingresa la palabra: ");
+                else if (mensaje.contains("Jugador 1, ingresa la palabra:")) {
                     String palabra = teclado.readLine();
-                    salida.println(palabra); // Enviar la palabra al servidor
+                    salida.println(palabra); // Enviar longitud al servidor
                 }
 
-                // Jugador 1 corrige la letra de Jugador 2
-                else if (mensaje.contains("Corrige: 1 si está bien, 0 si está mal.")) {
-                    System.out.print("¿Está la letra bien? (1 para sí, 0 para no): ");
-                    String respuesta = teclado.readLine();
-                    salida.println(respuesta); // Enviar la corrección
 
-                    // Si está bien, preguntar por la posición
-                    if ("1".equals(respuesta)) {
-                        System.out.print("Ingresa la posición de la letra: ");
-                        String posicion = teclado.readLine();
-                        salida.println(posicion); // Enviar la posición
-                    }
-                }
 
                 // Manejo del turno del jugador
                 else if (mensaje.contains("Ingresa una letra:")) {

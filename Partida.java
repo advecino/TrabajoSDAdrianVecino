@@ -89,64 +89,55 @@ public class Partida implements Runnable {
 
     private void jugarContraJugador(PrintWriter salida1, BufferedReader entrada1, PrintWriter salida2, BufferedReader entrada2) throws IOException {
         // Jugador 1 elige la palabra
-        salida1.println("Jugador 1, ingresa la longitud de la palabra:");
-        int longitud = Integer.parseInt(entrada1.readLine());
+        salida1.println("Jugador 1, ingresa la palabra:");
+        String palabra = entrada1.readLine();
+        int longitud = palabra.length();
         char[] tablero = new char[longitud];
         Arrays.fill(tablero, '_');
         int intentos = 8;
 
-        salida1.println("Jugador 1, corrige las letras ingresadas por Jugador 2.");
         salida2.println("¡Comienza el juego! La palabra tiene " + longitud + " letras.");
-
         while (intentos > 0) {
             salida2.println("Palabra: " + String.valueOf(tablero));
             salida2.println("Intentos restantes: " + intentos);
-
-            // Enviar el monigote actual al Jugador 2 según los intentos restantes
-            switch (intentos) {
+            salida1.println("Al jugador2 le quedan " + intentos + " intentos.");
+            switch(intentos) {
                 case 8: break;
-                case 7: intentos7(salida2); break;
-                case 6: intentos6(salida2); break;
-                case 5: intentos5(salida2); break;
-                case 4: intentos4(salida2); break;
-                case 3: intentos3(salida2); break;
-                case 2: intentos2(salida2); break;
-                case 1: intentos1(salida2); break;
-                case 0: intentos0(salida2); break;
+                case 7: intentos7(salida2);intentos7(salida1); break;
+                case 6: intentos6(salida2);intentos6(salida1); break;
+                case 5: intentos5(salida2);intentos5(salida1); break;
+                case 4: intentos4(salida2);intentos4(salida1); break;
+                case 3: intentos3(salida2);intentos3(salida1); break;
+                case 2: intentos2(salida2);intentos2(salida1); break;
+                case 1: intentos1(salida2);intentos1(salida1); break;
             }
 
-            // Pedirle a Jugador 2 que ingrese una letra
+
             salida2.println("Ingresa una letra:");
-            String letra = entrada2.readLine();  // El Jugador 2 ingresa una letra
-            salida1.println("Jugador 2 ingresó: " + letra + ". Corrige: 1 si está bien, 0 si está mal.");
-            int respuesta = Integer.parseInt(entrada1.readLine());  // El Jugador 1 corrige
 
-            if (respuesta == 1) {
-                // Si la letra es correcta, el Jugador 1 ingresa la cantidad de ocurrencias de esa letra
-                salida1.println("¿Cuántas veces aparece esta letra en la palabra?");
-                int cantidad = Integer.parseInt(entrada1.readLine());
+            String letra = entrada2.readLine();
+            salida1.println("Letra recibida por el jugador2: " + letra);
+            System.out.println("Letra recibida: " + letra); // Depuración
+            boolean acierto = false;
 
-                // El Jugador 1 ingresa las posiciones de la letra
-                for (int i = 0; i < cantidad; i++) {
-                    salida1.println("Ingresa la posición de la letra " + letra + " (0-" + (longitud - 1) + "):");
-                    int posicion = Integer.parseInt(entrada1.readLine());
-                    tablero[posicion] = letra.charAt(0);  // Colocamos la letra en las posiciones correctas
+            for (int i = 0; i < palabra.length(); i++) {
+                if (palabra.charAt(i) == letra.charAt(0)) {
+                    tablero[i] = letra.charAt(0);
+                    acierto = true;
                 }
-            } else {
-                intentos--;  // Solo reducimos los intentos si la letra es incorrecta
             }
 
-            // Si el tablero ya no tiene guiones bajos, el juego termina
-            if (String.valueOf(tablero).indexOf('_') == -1) {
-                salida1.println("¡Jugador 2 ha ganado!");
-                salida2.println("¡Felicidades, has ganado!");
+            if (!acierto) intentos--;
+
+            if (String.valueOf(tablero).equals(palabra)) {
+                salida2.println("¡Felicidades, has ganado! La palabra era: " + palabra);
                 return;
             }
         }
-
-        // Si los intentos se agotaron, se termina el juego
-        salida1.println("¡Jugador 2 ha perdido!");
-        salida2.println("¡Has perdido!");
+        intentos0(salida2);
+        intentos0(salida1);
+        salida2.println("¡Has perdido! La palabra era: " + palabra);
+        salida1.println("¡Felicidades, has ganado!");
     }
 
 
