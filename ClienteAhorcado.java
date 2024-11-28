@@ -40,6 +40,15 @@ public class ClienteAhorcado {
                     String letra = teclado.readLine();
                     salida.println(letra); // Enviar la letra al servidor
                 }
+
+                if (mensaje.contains("¿Quieres jugar otra partida? (s/n)")) {
+                    String respuesta = teclado.readLine();
+                    salida.println(respuesta);
+                    if ("n".equalsIgnoreCase(respuesta)) {
+                        System.out.println("Saliendo del juego. Gracias por jugar.");
+                        break;
+                    }
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();

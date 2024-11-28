@@ -6,6 +6,7 @@ public class Partida implements Runnable {
     private Socket jugador1;
     private Socket jugador2; // Null si es un jugador contra la máquina
     private List<String> palabras;
+    private boolean partidaTerminada;
 
     public Partida(Socket jugador1, Socket jugador2, List<String> palabras) {
         this.jugador1 = jugador1;
@@ -19,17 +20,33 @@ public class Partida implements Runnable {
                 BufferedReader entrada1 = new BufferedReader(new InputStreamReader(jugador1.getInputStream()));
                 PrintWriter salida1 = new PrintWriter(jugador1.getOutputStream(), true)
         ) {
-            if (jugador2 == null) {
-                // Modo de un jugador contra la máquina
-                jugarContraMaquina(salida1, entrada1);
-            } else {
-                try (
-                        BufferedReader entrada2 = new BufferedReader(new InputStreamReader(jugador2.getInputStream()));
-                        PrintWriter salida2 = new PrintWriter(jugador2.getOutputStream(), true)
-                ) {
-                    // Modo de dos jugadores
-                    jugarContraJugador(salida1, entrada1, salida2, entrada2);
+            boolean continuar = true;
+
+            while (continuar) {
+                // Preguntar al jugador 1 si quiere jugar contra la máquina o contra otro jugador
+                salida1.println("¿Quieres jugar contra la máquina (1) o contra otro jugador (2)?");
+                String modo = entrada1.readLine();
+
+                if ("1".equals(modo)) {
+                    // Modo de un jugador contra la máquina
+                    jugarContraMaquina(salida1, entrada1);
+                } else if ("2".equals(modo) && jugador2 != null) {
+                    try (
+                            BufferedReader entrada2 = new BufferedReader(new InputStreamReader(jugador2.getInputStream()));
+                            PrintWriter salida2 = new PrintWriter(jugador2.getOutputStream(), true)
+                    ) {
+                        // Modo de dos jugadores
+                        jugarContraJugador(salida1, entrada1, salida2, entrada2);
+                    }
+                } else {
+                    salida1.println("Modo inválido. Por favor, elige 1 o 2.");
+                    continue;
                 }
+
+                // Preguntar si quiere jugar otra partida
+                salida1.println("¿Quieres jugar otra partida? (s/n)");
+                String respuesta = entrada1.readLine().trim().toLowerCase();
+                continuar = "s".equals(respuesta);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -52,23 +69,18 @@ public class Partida implements Runnable {
         while (intentos > 0) {
             salida.println("Palabra: " + String.valueOf(tablero));
             salida.println("Intentos restantes: " + intentos);
-            switch(intentos) {
-                case 8: break;
-                case 7: intentos7(salida); break;
-                case 6: intentos6(salida); break;
-                case 5: intentos5(salida); break;
-                case 4: intentos4(salida); break;
-                case 3: intentos3(salida); break;
-                case 2: intentos2(salida); break;
-                case 1: intentos1(salida); break;
-            }
+            dibujarAhorcado(intentos, salida);
 
             salida.println("Ingresa una letra:");
-
-            String letra = entrada.readLine();
+            String letra = entrada.readLine().trim().toLowerCase();
             System.out.println("Letra recibida: " + letra); // Depuración
-            boolean acierto = false;
 
+            if (letra.isEmpty() || letra.length() > 1) {
+                salida.println("Entrada inválida. Ingresa solo una letra.");
+                continue;
+            }
+
+            boolean acierto = false;
             for (int i = 0; i < palabra.length(); i++) {
                 if (palabra.charAt(i) == letra.charAt(0)) {
                     tablero[i] = letra.charAt(0);
@@ -80,44 +92,38 @@ public class Partida implements Runnable {
 
             if (String.valueOf(tablero).equals(palabra)) {
                 salida.println("¡Felicidades, has ganado! La palabra era: " + palabra);
+                setPartidaTerminada(true);
                 return;
             }
+
         }
-        intentos0(salida);
+        dibujarAhorcado(0, salida);
         salida.println("¡Has perdido! La palabra era: " + palabra);
     }
 
     private void jugarContraJugador(PrintWriter salida1, BufferedReader entrada1, PrintWriter salida2, BufferedReader entrada2) throws IOException {
         // Jugador 1 elige la palabra
         salida1.println("Jugador 1, ingresa la palabra:");
-        String palabra = entrada1.readLine();
-        int longitud = palabra.length();
-        char[] tablero = new char[longitud];
+        String palabra = entrada1.readLine().trim().toLowerCase();
+        char[] tablero = new char[palabra.length()];
         Arrays.fill(tablero, '_');
         int intentos = 8;
 
-        salida2.println("¡Comienza el juego! La palabra tiene " + longitud + " letras.");
+        salida2.println("¡Comienza el juego! La palabra tiene " + palabra.length() + " letras.");
         while (intentos > 0) {
             salida2.println("Palabra: " + String.valueOf(tablero));
             salida2.println("Intentos restantes: " + intentos);
-            salida1.println("Al jugador2 le quedan " + intentos + " intentos.");
-            switch(intentos) {
-                case 8: break;
-                case 7: intentos7(salida2);intentos7(salida1); break;
-                case 6: intentos6(salida2);intentos6(salida1); break;
-                case 5: intentos5(salida2);intentos5(salida1); break;
-                case 4: intentos4(salida2);intentos4(salida1); break;
-                case 3: intentos3(salida2);intentos3(salida1); break;
-                case 2: intentos2(salida2);intentos2(salida1); break;
-                case 1: intentos1(salida2);intentos1(salida1); break;
-            }
-
+            dibujarAhorcado(intentos, salida2);
 
             salida2.println("Ingresa una letra:");
+            String letra = entrada2.readLine().trim().toLowerCase();
 
-            String letra = entrada2.readLine();
-            salida1.println("Letra recibida por el jugador2: " + letra);
-            System.out.println("Letra recibida: " + letra); // Depuración
+            if (letra.isEmpty() || letra.length() > 1) {
+                salida2.println("Entrada inválida. Ingresa solo una letra.");
+                continue;
+            }
+
+            salida1.println("Letra recibida por el jugador 2: " + letra);
             boolean acierto = false;
 
             for (int i = 0; i < palabra.length(); i++) {
@@ -131,15 +137,30 @@ public class Partida implements Runnable {
 
             if (String.valueOf(tablero).equals(palabra)) {
                 salida2.println("¡Felicidades, has ganado! La palabra era: " + palabra);
+                salida1.println("El jugador 2 ha ganado. La palabra era: " + palabra);
+
+                setPartidaTerminada(true);
                 return;
             }
         }
-        intentos0(salida2);
-        intentos0(salida1);
+        dibujarAhorcado(0, salida2);
         salida2.println("¡Has perdido! La palabra era: " + palabra);
-        salida1.println("¡Felicidades, has ganado!");
+        salida1.println("El jugador 2 ha perdido. ¡El jugador 1 gana!");
     }
 
+    private void dibujarAhorcado(int intentos, PrintWriter salida) {
+        switch (intentos) {
+            case 8: break;
+            case 7 : intentos7(salida);break;
+            case 6 : intentos6(salida);break;
+            case 5 : intentos5(salida);break;
+            case 4 : intentos4(salida);break;
+            case 3 : intentos3(salida);break;
+            case 2 : intentos2(salida);break;
+            case 1 : intentos1(salida);break;
+            default: intentos0(salida);break;
+        }
+    }
 
     private void cerrarSocket(Socket socket) {
         try {
@@ -222,6 +243,15 @@ public class Partida implements Runnable {
         salida.println("|");
     }
 
+
+
+    public boolean isPartidaTerminada() {
+        return partidaTerminada;
+    }
+
+    public void setPartidaTerminada(boolean partidaTerminada) {
+        this.partidaTerminada = partidaTerminada;
+    }
 
 
 }
