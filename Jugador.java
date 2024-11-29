@@ -1,4 +1,4 @@
-import java.net.Socket;
+// Clase para manejar los deatos de los jugadores
 
 public class Jugador {
     private String nombre;
@@ -26,8 +26,16 @@ public class Jugador {
         return partidasGanadas;
     }
 
+    public void setPartidasGanadas(int partidasGanadas) {
+        this.partidasGanadas = partidasGanadas;
+    }
+
     public int getPartidasPerdidas() {
         return partidasPerdidas;
+    }
+
+    public void setPartidasPerdidas(int partidasPerdidas) {
+        this.partidasPerdidas = partidasPerdidas;
     }
 
     // Métodos para incrementar partidas ganadas y perdidas

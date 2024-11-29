@@ -21,26 +21,28 @@ public class ClienteAhorcado {
 
                 System.out.println(mensaje);
 
-                // Manejo de la pregunta inicial sobre el modo de juego
-                if (mensaje.contains("¿Quieres jugar contra la máquina (1) o contra otro jugador (2)?")) {
+                // Elegir modo
+                if (mensaje.contains("¿Quieres jugar contra la máquina (1), contra otro jugador (2), o ver el ranquing (3)?")) {
                     String opcion = teclado.readLine();
-                    salida.println(opcion); // Enviar la elección al servidor
+                    salida.println(opcion); // Enviar la elección
                     if ("2".equals(opcion)) {
                         System.out.println("Esperando al segundo jugador...");
                     }
+                    if ("3".equals(opcion)) {
+                        System.out.println("Ranking:");
+                    }
                 }
 
-                // Jugador 1 ingresa la longitud de la palabra
                 else if (mensaje.contains("Jugador 1, ingresa la palabra:")) {
                     String palabra = teclado.readLine();
                     salida.println(palabra); // Enviar longitud al servidor
                 }
 
-                // Manejo del turno del jugador
                 else if (mensaje.contains("Ingresa una letra:")) {
                     String letra = teclado.readLine();
                     salida.println(letra); // Enviar la letra al servidor
                 }
+
                 else if (mensaje.contains("Introduce tu nickname: ")) {
                     String nombre = teclado.readLine();
                     salida.println(nombre);

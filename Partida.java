@@ -33,9 +33,8 @@ public class Partida implements Runnable {
 
             while (continuar) {
 
-                if (jugador2==null) {
+                if (jugador2==null) {// Modo contra la máquina
 
-                    // Modo de un jugador contra la máquina
                     jugarContraMaquina(salida1, entrada1,jugador);
                     continuar = preguntarSiQuiereJugarOtraPartidaSolo(salida1, entrada1);
                     if(!continuar) {
@@ -49,11 +48,10 @@ public class Partida implements Runnable {
                     }
 
 
-                } else {
-                    try (
-                            BufferedReader entrada2 = new BufferedReader(new InputStreamReader(jugador2.getInputStream()));
-                            PrintWriter salida2 = new PrintWriter(jugador2.getOutputStream(), true)
-                    ) {
+                } else { // Modo 2 jugadores
+                    try (BufferedReader entrada2 = new BufferedReader(new InputStreamReader(jugador2.getInputStream()));
+                            PrintWriter salida2 = new PrintWriter(jugador2.getOutputStream(), true))
+                    {
                         salida1.println("Esperando al segundo jugador...");
                         boolean correcto = true;
                         String nombre2 = "";
@@ -62,7 +60,7 @@ public class Partida implements Runnable {
                             nombre2 = entrada2.readLine();
                             correcto = false;
 
-                            for (Jugador j : jugadores) {
+                            for (Jugador j : jugadores) { // 2 jugadores no pueden tener el mismo nombre
                                 if (nombre2.equals(j.getNombre())) {
                                     correcto = true; // El nombre ya está en uso
                                     salida2.println("No te puedes poner el mismo nombre que tu rival.");
@@ -70,18 +68,15 @@ public class Partida implements Runnable {
                                 }
                             }
                         }
-
                         // Crear el jugador con el nombre válido
                         Jugador jugador02 = new Jugador(nombre2);
                         jugadores.add(jugador02);
-
 
                         while(continuar){
                             jugarContraJugador(salida1, entrada1, salida2, entrada2, jugador,jugador02);
 
                             Future<Boolean> respuestaJugador1 = executor.submit(() -> preguntarSiQuiereJugarOtraPartida(salida1, entrada1));
-                            Future<Boolean> respuestaJugador2 = null;
-                            respuestaJugador2 = executor.submit(() -> preguntarSiQuiereJugarOtraPartida(salida2, entrada2));
+                            Future<Boolean> respuestaJugador2 = executor.submit(() -> preguntarSiQuiereJugarOtraPartida(salida2, entrada2));
 
 
                             boolean respuesta1 = respuestaJugador1.get();
@@ -104,9 +99,7 @@ public class Partida implements Runnable {
                                 }
                             }
                         }
-                    } catch (ExecutionException e) {
-                        throw new RuntimeException(e);
-                    } catch (InterruptedException e) {
+                    } catch (ExecutionException | InterruptedException e) {
                         throw new RuntimeException(e);
                     }
                 }
@@ -122,15 +115,13 @@ public class Partida implements Runnable {
     }
 
     private void jugarContraMaquina(PrintWriter salida, BufferedReader entrada, Jugador jugador) throws IOException {
-        System.out.println("Cargando palabra para la partida..."); // Depuración
+        System.out.println("Cargando palabra para la partida...");
         String palabra = palabras.get(new Random().nextInt(palabras.size()));
-        System.out.println("Palabra seleccionada: " + palabra); // Depuración
+        System.out.println("Palabra seleccionada: " + palabra);
 
         char[] tablero = new char[palabra.length()];
         Arrays.fill(tablero, '_');
         int intentos = 8;
-
-
 
         salida.println("¡Comienza el juego contra la máquina!");
         while (intentos > 0) {
@@ -140,9 +131,9 @@ public class Partida implements Runnable {
 
             salida.println("Ingresa una letra:");
             String letra = entrada.readLine().trim().toLowerCase();
-            System.out.println("Letra recibida: " + letra); // Depuración
+            System.out.println("Letra recibida: " + letra);
 
-            if (letra.isEmpty() || letra.length() > 1) {
+            if (letra.length() != 1) {
                 salida.println("Entrada inválida. Ingresa solo una letra.");
                 continue;
             }
@@ -192,7 +183,7 @@ public class Partida implements Runnable {
             salida2.println("Ingresa una letra:");
             String letra = entrada2.readLine().trim().toLowerCase();
 
-            if (letra.isEmpty() || letra.length() > 1) {
+            if (letra.length() != 1) {
                 salida2.println("Entrada inválida. Ingresa solo una letra.");
                 continue;
             }
@@ -350,10 +341,8 @@ public class Partida implements Runnable {
     private boolean crearFichero() {
         File archivo = new File(fichero);
 
-        // Verificar si el archivo ya existe
         if (!archivo.exists()) {
             try {
-                // Si no existe, lo creamos
                 if (archivo.createNewFile()) {
                     System.out.println("El archivo fue creado exitosamente.");
                     // Escribir la cabecera (si es necesario)
@@ -364,14 +353,14 @@ public class Partida implements Runnable {
                     return true;  // Archivo creado y cabecera escrita
                 } else {
                     System.out.println("No se pudo crear el archivo.");
-                    return false;  // No se pudo crear el archivo
+                    return false;
                 }
             } catch (IOException e) {
                 e.printStackTrace();
-                return false;  // Error al intentar crear el archivo
+                return false;
             }
         } else {
-            return true;  // El archivo ya existe, no es necesario crear uno nuevo
+            return true;  // El archivo ya existe
         }
     }
 
@@ -384,24 +373,20 @@ public class Partida implements Runnable {
         try (BufferedReader reader = new BufferedReader(new FileReader(archivo))) {
             String linea;
 
-            // Leer todas las líneas del archivo
             while ((linea = reader.readLine()) != null) {
-                String[] datos = linea.split(",");  // Asumimos que los datos están separados por comas
-                String nombreExistente = datos[0];  // Nombre del jugador
+                String[] datos = linea.split(",");
+                String nombreExistente = datos[0];
 
                 if (nombreExistente.equals(nombre)) {
-                    // Si encontramos al jugador, sumamos las partidas ganadas y perdidas
                     int partidasGanadasExistentes = Integer.parseInt(datos[1]);
                     int partidasPerdidasExistentes = Integer.parseInt(datos[2]);
 
-                    partidasGanadas += partidasGanadasExistentes;  // Sumamos las partidas ganadas
-                    partidasPerdidas += partidasPerdidasExistentes; // Sumamos las partidas perdidas
+                    partidasGanadas += partidasGanadasExistentes;
+                    partidasPerdidas += partidasPerdidasExistentes;
 
-                    // Marcar que hemos encontrado al jugador
                     encontrado = true;
                 }
 
-                // Agregar la línea al listado para reescribir el archivo más tarde
                 lineas.add(linea);
             }
         } catch (IOException e) {
@@ -409,11 +394,11 @@ public class Partida implements Runnable {
             System.out.println("Hubo un problema al leer el archivo.");
         }
 
-        // Si el jugador no existe, lo añadimos como una nueva línea
+        // Si el jugador no existe, se añade como una nueva línea
         if (!encontrado) {
             lineas.add(nombre + "," + partidasGanadas + "," + partidasPerdidas);
         } else {
-            // Si el jugador ya existe, actualizamos la línea con las nuevas estadísticas
+            // Si el jugador ya existe, se actualiza la línea con las nuevas estadísticas
             for (int i = 0; i < lineas.size(); i++) {
                 String[] datos = lineas.get(i).split(",");
                 if (datos[0].equals(nombre)) {
@@ -427,7 +412,7 @@ public class Partida implements Runnable {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(archivo))) {
             for (String linea : lineas) {
                 writer.write(linea);
-                writer.newLine(); // Nueva línea después de cada registro
+                writer.newLine();
             }
             System.out.println("Archivo actualizado correctamente.");
         } catch (IOException e) {
@@ -435,6 +420,7 @@ public class Partida implements Runnable {
             System.out.println("Hubo un problema al escribir en el archivo.");
         }
     }
+
 
 
 }
