@@ -1,14 +1,14 @@
 import java.io.*;
 import java.net.*;
-import java.util.concurrent.*;
-import java.util.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.concurrent.*;
+import java.util.*;
 
 public class ServidorAhorcado {
     private static final int PUERTO = 12345;
     private static ExecutorService pool = Executors.newCachedThreadPool(); // Para manejar hilos de partidas
-    private static Integer partidasTotales = 0; // Contador de partidas activas
+    private static Integer partidasTotales = 0;
 
     public static void main(String[] args) {
         try (ServerSocket serverSocket = new ServerSocket(PUERTO)) {
@@ -21,38 +21,34 @@ public class ServidorAhorcado {
                 BufferedReader entrada1 = new BufferedReader(new InputStreamReader(cliente1.getInputStream()));
                 PrintWriter salida1 = new PrintWriter(cliente1.getOutputStream(), true);
 
-                // Preguntar al jugador 1 por el modo de juego
-                salida1.println("¿Quieres jugar contra la máquina (1) o contra otro jugador (2)?");
-                String opcion = entrada1.readLine();
-                System.out.println("Jugador 1 eligió: " + opcion); // Depuración
+                Future<String> opcionElegida1 = pool.submit(() -> preguntarModo(salida1,entrada1));
+                String opcion = opcionElegida1.get();
 
                 if ("1".equals(opcion)) {
                     System.out.println("Creando partida contra la máquina.");
-                    // Incrementar el contador de partidas activas
+                    // Aquí va la lógica para crear la partida contra la máquina
+                    Partida partida = new Partida(cliente1, null, cargarPalabras());
                     synchronized (partidasTotales) {
-                        partidasTotales++;
+                        partidasTotales++; // Incrementar el contador cuando se crea una partida
                         System.out.println("Numero de partidas: " + partidasTotales);
                     }
-                    pool.execute(new Partida(cliente1, null, cargarPalabras()));
+                    pool.execute(partida);
+
                 } else if ("2".equals(opcion)) {
-                    // Esperamos a Jugador 2 en paralelo sin bloquear el flujo
+                    // Esperamos a Jugador 2
                     System.out.println("Esperando a Jugador 2...");
                     Socket cliente2 = serverSocket.accept();
                     System.out.println("Jugador 2 conectado.");
 
-                    // Enviar al Cliente 2 la misma pregunta para elegir el modo de juego
-                    PrintWriter salida2 = new PrintWriter(cliente2.getOutputStream(), true);
-                    salida2.println("¿Quieres jugar contra la máquina (1) o unirte a una partida existente (2)?");
-
-                    // Esperamos la respuesta del Cliente 2
                     BufferedReader entrada2 = new BufferedReader(new InputStreamReader(cliente2.getInputStream()));
-                    String opcion2 = entrada2.readLine();
-                    System.out.println("Jugador 2 eligió: " + opcion2);
+                    PrintWriter salida2 = new PrintWriter(cliente2.getOutputStream(), true);
+
+                    Future<String> opcionElegida2 = pool.submit(() -> preguntarModo(salida2,entrada2));
+                    String opcion2 = opcionElegida2.get();
 
                     if ("2".equals(opcion2)) {
                         System.out.println("El Jugador 2 se ha unido a la partida.");
-                        salida2.println("Esperando a que el Jugador 1 elija la palabra...");
-                        // Crear una nueva partida en paralelo
+                        // Lógica de crear la partida entre ambos jugadores
                         Partida partida = new Partida(cliente1, cliente2, cargarPalabras());
                         pool.execute(partida);
                         synchronized (partidasTotales) {
@@ -60,21 +56,23 @@ public class ServidorAhorcado {
                             System.out.println("Numero de partidas: " + partidasTotales);
                         }
                     } else {
-                        salida2.println("El modo de juego no es válido. Desconectando.");
+                        salida2.println("Opción inválida. Desconectando.");
                         cliente2.close();
                     }
                 } else {
-                    System.out.println("Opción inválida. Cerrando conexión.");
-                    salida1.println("Opción inválida. Desconexión.");
+                    salida1.println("Opción inválida. Cerrando conexión.");
                     cliente1.close();
                 }
             }
         } catch (IOException e) {
             e.printStackTrace();
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
     }
 
-    // Cargar las palabras desde un archivo
     private static List<String> cargarPalabras() {
         try {
             // Intentar leer las palabras del archivo "palabras.txt"
@@ -85,5 +83,12 @@ public class ServidorAhorcado {
             // Palabras predeterminadas en caso de error
             return Arrays.asList("ejemplo", "palabra", "java");
         }
+    }
+
+    private static String preguntarModo(PrintWriter salida, BufferedReader entrada) throws IOException {
+        salida.println("¿Quieres jugar contra la máquina (1) o contra otro jugador (2)?");
+        String opcion = entrada.readLine();
+        System.out.println("Jugador 1 eligió: " + opcion);
+        return opcion;
     }
 }

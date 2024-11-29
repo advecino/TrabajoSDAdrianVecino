@@ -1,12 +1,14 @@
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.util.concurrent.*;
 
 public class Partida implements Runnable {
     private Socket jugador1;
     private Socket jugador2; // Null si es un jugador contra la máquina
     private List<String> palabras;
     private boolean partidaTerminada;
+    private ExecutorService executorService = Executors.newFixedThreadPool(2);
 
     public Partida(Socket jugador1, Socket jugador2, List<String> palabras) {
         this.jugador1 = jugador1;
@@ -23,30 +25,47 @@ public class Partida implements Runnable {
             boolean continuar = true;
 
             while (continuar) {
-                // Preguntar al jugador 1 si quiere jugar contra la máquina o contra otro jugador
-                salida1.println("¿Quieres jugar contra la máquina (1) o contra otro jugador (2)?");
-                String modo = entrada1.readLine();
 
-                if ("1".equals(modo)) {
+                if (jugador2==null) {
                     // Modo de un jugador contra la máquina
                     jugarContraMaquina(salida1, entrada1);
-                } else if ("2".equals(modo) && jugador2 != null) {
+                    continuar = preguntarSiQuiereJugarOtraPartidaSolo(salida1, entrada1);
+                } else {
                     try (
                             BufferedReader entrada2 = new BufferedReader(new InputStreamReader(jugador2.getInputStream()));
                             PrintWriter salida2 = new PrintWriter(jugador2.getOutputStream(), true)
                     ) {
-                        // Modo de dos jugadores
-                        jugarContraJugador(salida1, entrada1, salida2, entrada2);
+                        while(continuar){
+                            jugarContraJugador(salida1, entrada1, salida2, entrada2);
+
+                            Future<Boolean> respuestaJugador1 = executorService.submit(() -> preguntarSiQuiereJugarOtraPartida(salida1, entrada1));
+                            Future<Boolean> respuestaJugador2 = null;
+                            respuestaJugador2 = executorService.submit(() -> preguntarSiQuiereJugarOtraPartida(salida2, entrada2));
+
+
+                            boolean respuesta1 = respuestaJugador1.get(); // Espera la respuesta de jugador 1
+                            boolean respuesta2 = respuestaJugador2.get();
+
+                            continuar = respuesta1 && respuesta2;
+                            if(!respuesta1){
+                                salida2.println("Tu rival no quiere jugar otra partida");
+                            }
+                            if(!respuesta2){
+                                salida1.println("Tu rival no quiere jugar otra partida");
+                            }
+
+
+                        }
+
+                    } catch (ExecutionException e) {
+                        throw new RuntimeException(e);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
                     }
-                } else {
-                    salida1.println("Modo inválido. Por favor, elige 1 o 2.");
-                    continue;
                 }
 
-                // Preguntar si quiere jugar otra partida
-                salida1.println("¿Quieres jugar otra partida? (s/n)");
-                String respuesta = entrada1.readLine().trim().toLowerCase();
-                continuar = "s".equals(respuesta);
+
+
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -103,6 +122,7 @@ public class Partida implements Runnable {
 
     private void jugarContraJugador(PrintWriter salida1, BufferedReader entrada1, PrintWriter salida2, BufferedReader entrada2) throws IOException {
         // Jugador 1 elige la palabra
+        salida2.println("Tu rival esta eligiendo la palabra...");
         salida1.println("Jugador 1, ingresa la palabra:");
         String palabra = entrada1.readLine().trim().toLowerCase();
         char[] tablero = new char[palabra.length()];
@@ -111,10 +131,13 @@ public class Partida implements Runnable {
 
         salida2.println("¡Comienza el juego! La palabra tiene " + palabra.length() + " letras.");
         while (intentos > 0) {
+            salida1.println("Palabra: " + String.valueOf(tablero));
             salida2.println("Palabra: " + String.valueOf(tablero));
             salida2.println("Intentos restantes: " + intentos);
             dibujarAhorcado(intentos, salida2);
+            dibujarAhorcado(intentos, salida1);
 
+            salida1.println("El rival esta eligiendo una letra...");
             salida2.println("Ingresa una letra:");
             String letra = entrada2.readLine().trim().toLowerCase();
 
@@ -137,15 +160,14 @@ public class Partida implements Runnable {
 
             if (String.valueOf(tablero).equals(palabra)) {
                 salida2.println("¡Felicidades, has ganado! La palabra era: " + palabra);
-                salida1.println("El jugador 2 ha ganado. La palabra era: " + palabra);
-
+                salida1.println("Tu rival ha ganado.");
                 setPartidaTerminada(true);
                 return;
             }
         }
         dibujarAhorcado(0, salida2);
         salida2.println("¡Has perdido! La palabra era: " + palabra);
-        salida1.println("El jugador 2 ha perdido. ¡El jugador 1 gana!");
+        salida1.println("Tu rival ha perdido. ¡Tu ganas!");
     }
 
     private void dibujarAhorcado(int intentos, PrintWriter salida) {
@@ -251,6 +273,19 @@ public class Partida implements Runnable {
 
     public void setPartidaTerminada(boolean partidaTerminada) {
         this.partidaTerminada = partidaTerminada;
+    }
+
+    private boolean preguntarSiQuiereJugarOtraPartida(PrintWriter salida, BufferedReader entrada) throws IOException {
+        salida.println("¿Quieres jugar otra partida? (s/n)");
+        String respuesta = entrada.readLine().trim().toLowerCase();
+        salida.println("Esperando la respuesta de tu rival");
+        return "s".equals(respuesta);
+    }
+
+    private boolean preguntarSiQuiereJugarOtraPartidaSolo(PrintWriter salida, BufferedReader entrada) throws IOException {
+        salida.println("¿Quieres jugar otra partida? (s/n)");
+        String respuesta = entrada.readLine().trim().toLowerCase();
+        return "s".equals(respuesta);
     }
 
 

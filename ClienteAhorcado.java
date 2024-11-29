@@ -36,7 +36,6 @@ public class ClienteAhorcado {
 
                 // Manejo del turno del jugador
                 else if (mensaje.contains("Ingresa una letra:")) {
-                    System.out.print("Tu letra: ");
                     String letra = teclado.readLine();
                     salida.println(letra); // Enviar la letra al servidor
                 }

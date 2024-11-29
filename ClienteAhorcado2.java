@@ -17,28 +17,36 @@ public class ClienteAhorcado2 {
             while ((mensaje = entrada.readLine()) != null) {
                 System.out.println(mensaje);
 
-                // Preguntar si quiere jugar contra la máquina o unirse a una partida
-                if (mensaje.contains("¿Quieres jugar contra la máquina (1) o unirte a una partida existente (2)?")) {
+                // Manejo de la pregunta inicial sobre el modo de juego
+                if (mensaje.contains("¿Quieres jugar contra la máquina (1) o contra otro jugador (2)?")) {
                     String opcion = teclado.readLine();
-                    salida.println(opcion);
-
+                    salida.println(opcion); // Enviar la elección al servidor
                     if ("2".equals(opcion)) {
-                        System.out.println("Esperando a que el servidor te asigne a una partida...");
+                        System.out.println("Esperando al segundo jugador...");
                     }
                 }
 
-
-                // Cuando es el turno de Jugador 2
-                else if (mensaje.contains("Ingresa una letra:")) {
-                    System.out.print("Tu letra: ");
-                    String letra = teclado.readLine();
-                    salida.println(letra);
+                // Jugador 1 ingresa la longitud de la palabra
+                else if (mensaje.contains("Jugador 1, ingresa la palabra:")) {
+                    String palabra = teclado.readLine();
+                    salida.println(palabra); // Enviar longitud al servidor
                 }
 
-                // Anuncio de fin de la partida
-                else if (mensaje.contains("¡Has ganado!") || mensaje.contains("¡Has perdido!")) {
-                    System.out.println(mensaje);
-                    break;
+
+
+                // Manejo del turno del jugador
+                else if (mensaje.contains("Ingresa una letra:")) {
+                    String letra = teclado.readLine();
+                    salida.println(letra); // Enviar la letra al servidor
+                }
+
+                if (mensaje.contains("¿Quieres jugar otra partida? (s/n)")) {
+                    String respuesta = teclado.readLine();
+                    salida.println(respuesta);
+                    if ("n".equalsIgnoreCase(respuesta)) {
+                        System.out.println("Saliendo del juego. Gracias por jugar.");
+                        break;
+                    }
                 }
             }
         } catch (IOException e) {
