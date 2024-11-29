@@ -66,6 +66,12 @@ public class ServidorAhorcado {
                     mostrarRanking(salida1);
                     cliente1.close();
                 }
+                else if("4".equals(opcion)) {
+                    salida1.println("Introduce tu nickname: ");
+                    String nombre = entrada1.readLine();
+                    buscarPuntuacion(nombre,salida1);
+                    cliente1.close();
+                }
 
                 else {
                     salida1.println("Opción inválida. Cerrando conexión.");
@@ -94,7 +100,7 @@ public class ServidorAhorcado {
     }
 
     private static String preguntarModo(PrintWriter salida, BufferedReader entrada) throws IOException {
-        salida.println("¿Quieres jugar contra la máquina (1), contra otro jugador (2), o ver el ranquing (3)?");
+        salida.println("¿Quieres jugar contra la máquina (1), contra otro jugador (2), ver el ranquing (3), ver tu puntuacion (4)?");
         String opcion = entrada.readLine();
         System.out.println("Jugador 1 eligió: " + opcion);
         return opcion;
@@ -148,6 +154,25 @@ public class ServidorAhorcado {
             }
         } else {
             System.out.println("No hay estadísticas disponibles.");
+        }
+    }
+
+    private static void buscarPuntuacion(String nombre, PrintWriter salida) {
+        List<Jugador> jugadores = cargarEstadisticas();
+
+        // Buscamos si el jugador existe en la lista
+        boolean encontrado = false;
+        for (Jugador jugador : jugadores) {
+            if (jugador.getNombre().equalsIgnoreCase(nombre)) {
+                // Si lo encontramos, mostramos sus puntuaciones
+                salida.println(jugador.getPuntuacion());
+                encontrado = true;
+                break;
+            }
+        }
+
+        if (!encontrado) {
+            salida.println("Jugador no encontrado.");
         }
     }
 

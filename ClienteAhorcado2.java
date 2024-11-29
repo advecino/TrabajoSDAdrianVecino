@@ -1,7 +1,6 @@
 import java.io.*;
 import java.net.*;
 
-//Misma clase que clienteAhorcado, sirve para jugar 2 jugadores conectados y para comprobar que el servidor puede manejar varias partidas concurrentemente
 public class ClienteAhorcado2 {
     private static final String HOST = "localhost";
     private static final int PUERTO = 12345;
@@ -23,7 +22,7 @@ public class ClienteAhorcado2 {
                 System.out.println(mensaje);
 
                 // Elegir modo
-                if (mensaje.contains("¿Quieres jugar contra la máquina (1), contra otro jugador (2), o ver el ranquing (3)?")) {
+                if (mensaje.contains("¿Quieres jugar contra la máquina (1), contra otro jugador (2), ver el ranquing (3), ver tu puntuacion (4)?")) {
                     String opcion = teclado.readLine();
                     salida.println(opcion); // Enviar la elección
                     if ("2".equals(opcion)) {
