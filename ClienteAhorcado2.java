@@ -15,6 +15,10 @@ public class ClienteAhorcado2 {
 
             String mensaje;
             while ((mensaje = entrada.readLine()) != null) {
+                if (mensaje.trim().isEmpty()) {
+                    continue; // Ignorar mensajes vacíos
+                }
+
                 System.out.println(mensaje);
 
                 // Manejo de la pregunta inicial sobre el modo de juego
@@ -32,23 +36,29 @@ public class ClienteAhorcado2 {
                     salida.println(palabra); // Enviar longitud al servidor
                 }
 
-
-
                 // Manejo del turno del jugador
                 else if (mensaje.contains("Ingresa una letra:")) {
                     String letra = teclado.readLine();
                     salida.println(letra); // Enviar la letra al servidor
                 }
+                else if (mensaje.contains("Introduce tu nickname: ")) {
+                    String nombre = teclado.readLine();
+                    salida.println(nombre);
+                }
 
-                if (mensaje.contains("¿Quieres jugar otra partida? (s/n)")) {
+                else if (mensaje.contains("¿Quieres jugar otra partida? (s/n)")) {
                     String respuesta = teclado.readLine();
                     salida.println(respuesta);
                     if ("n".equalsIgnoreCase(respuesta)) {
                         System.out.println("Saliendo del juego. Gracias por jugar.");
+                        mensaje = entrada.readLine();
+                        System.out.println(mensaje);
                         break;
                     }
                 }
+
             }
+
         } catch (IOException e) {
             e.printStackTrace();
         }

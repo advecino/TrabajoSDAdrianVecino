@@ -2,14 +2,12 @@ import java.net.Socket;
 
 public class Jugador {
     private String nombre;
-    private Socket socket;
     private int partidasGanadas;
     private int partidasPerdidas;
 
-    // Constructor
-    public Jugador(String nombre, Socket socket) {
+
+    public Jugador(String nombre) {
         this.nombre = nombre;
-        this.socket = socket;
         this.partidasGanadas = 0;
         this.partidasPerdidas = 0;
     }
@@ -23,9 +21,6 @@ public class Jugador {
         this.nombre = nombre;
     }
 
-    public Socket getSocket() {
-        return socket;
-    }
 
     public int getPartidasGanadas() {
         return partidasGanadas;
@@ -46,6 +41,9 @@ public class Jugador {
 
     // Método para mostrar la puntuación
     public String getPuntuacion() {
-        return nombre + " - Ganadas: " + partidasGanadas + ", Perdidas: " + partidasPerdidas;
+        return nombre + ", tus puntuaciones son: " +
+                partidasGanadas + " " + (partidasGanadas == 1 ? "partida ganada" : "partidas ganadas") + " y " +
+                partidasPerdidas + " " + (partidasPerdidas == 1 ? "partida perdida" : "partidas perdidas");
+
     }
 }

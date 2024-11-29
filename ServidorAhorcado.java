@@ -10,6 +10,7 @@ public class ServidorAhorcado {
     private static ExecutorService pool = Executors.newCachedThreadPool(); // Para manejar hilos de partidas
     private static Integer partidasTotales = 0;
 
+
     public static void main(String[] args) {
         try (ServerSocket serverSocket = new ServerSocket(PUERTO)) {
             System.out.println("Servidor iniciado en el puerto " + PUERTO);
@@ -26,6 +27,7 @@ public class ServidorAhorcado {
 
                 if ("1".equals(opcion)) {
                     System.out.println("Creando partida contra la máquina.");
+
                     // Aquí va la lógica para crear la partida contra la máquina
                     Partida partida = new Partida(cliente1, null, cargarPalabras());
                     synchronized (partidasTotales) {
