@@ -11,7 +11,7 @@ public class ClienteAhorcado2 {
              PrintWriter salida = new PrintWriter(socket.getOutputStream(), true);
              BufferedReader teclado = new BufferedReader(new InputStreamReader(System.in))) {
 
-            System.out.println("Conectado al servidor de Ahorcado.");
+            System.out.println("Conectado al servidor de Ahorcado, esperando en la cola...");
 
             String mensaje;
             while ((mensaje = entrada.readLine()) != null) {
