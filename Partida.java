@@ -4,11 +4,11 @@ import java.util.*;
 import java.util.concurrent.*;
 
 public class Partida implements Runnable {
-    private Socket jugador1;
-    private Socket jugador2; // Null si es un jugador contra la máquina
-    private List<String> palabras;
+    private final Socket jugador1;
+    private final Socket jugador2; // Null si es un jugador contra la máquina
+    private final List<String> palabras;
     private boolean partidaTerminada;
-    private ExecutorService executor = Executors.newFixedThreadPool(2);
+    private final ExecutorService executor = Executors.newFixedThreadPool(2);
     static List<Jugador> jugadores = new ArrayList<>();
     private final String  fichero = "estadisticas.csv";
 
@@ -85,8 +85,14 @@ public class Partida implements Runnable {
                             continuar = respuesta1 && respuesta2;
 
                             if(!continuar){
+                                if(respuesta1){
+                                    salida1.println("Tu rival no quiere jugar mas partidas.");
+                                }
                                 salida1.println(jugador.getPuntuacion());
                                 cerrarSocket(jugador1);
+                                if(respuesta2){
+                                    salida2.println("Tu rival no quiere jugar mas partidas.");
+                                }
                                 salida2.println(jugador02.getPuntuacion());
                                 cerrarSocket(jugador2);
                                 if (crearFichero()) {
@@ -312,10 +318,6 @@ public class Partida implements Runnable {
     }
 
 
-
-    public boolean isPartidaTerminada() {
-        return partidaTerminada;
-    }
 
     public void setPartidaTerminada(boolean partidaTerminada) {
         this.partidaTerminada = partidaTerminada;
