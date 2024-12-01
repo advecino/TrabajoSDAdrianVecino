@@ -5,11 +5,9 @@ gente
 hombre
 mujer
 bebe
-nino
 adolescente
 adulto
 anciano
-senor
 caballero
 dama
 individuo
@@ -35,7 +33,6 @@ brazo
 codo
 hombro
 mano
-muneca
 palma
 dedo
 abdomen
@@ -95,7 +92,6 @@ lago
 oceano
 cerro
 monte
-montana
 energia
 animal
 perro
@@ -131,7 +127,6 @@ bicho
 mariposa
 polilla
 saltamontes
-arana
 mosca
 mosquito
 cucaracha
@@ -162,7 +157,6 @@ pino
 bambu
 nuez
 almendra
-castana
 arroz
 avena
 cebada
@@ -176,7 +170,6 @@ manzana
 naranja
 platano
 pera
-castano
 durazno
 tomate
 sandia
@@ -197,7 +190,6 @@ decada
 siglo
 milenio
 ayer
-manana
 amanecer
 mediodia
 tarde
@@ -308,7 +300,6 @@ constitucion
 decreto
 consumo
 demanda
-compania
 comercio
 mercado
 servicio
@@ -416,7 +407,6 @@ japones
 ingles
 chino
 aleman
-espanol
 frances
 color
 blanco
