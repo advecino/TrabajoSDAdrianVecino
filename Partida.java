@@ -9,7 +9,7 @@ public class Partida implements Runnable {
     private final List<String> palabras;
     private boolean partidaTerminada;
     private final ExecutorService executor = Executors.newFixedThreadPool(2);
-    static List<Jugador> jugadores = new ArrayList<>();
+    private List<Jugador> jugadores = new ArrayList<>();
     private final String  fichero = "estadisticas.csv";
 
     public Partida(Socket jugador1, Socket jugador2, List<String> palabras) {
@@ -26,18 +26,22 @@ public class Partida implements Runnable {
                 PrintWriter salida1 = new PrintWriter(jugador1.getOutputStream(), true)
         ) {
             boolean continuar = true;
-            salida1.println("Introduce tu nickname: ");
-            String nombre = entrada1.readLine();
-            Jugador jugador = new Jugador(nombre);
-            jugadores.add(jugador);
+
+
 
             while (continuar) {
 
                 if (jugador2==null) {// Modo contra la máquina
+                    salida1.println("Introduce tu nickname: ");
+                    String nombre = entrada1.readLine();
+                    Jugador jugador = new Jugador(nombre);
+                    jugadores.add(jugador);
+                    while(continuar){
 
-                    jugarContraMaquina(salida1, entrada1,jugador);
-                    continuar = preguntarSiQuiereJugarOtraPartidaSolo(salida1, entrada1);
-                    if(!continuar) {
+                        jugarContraMaquina(salida1, entrada1,jugador);
+                        continuar = preguntarSiQuiereJugarOtraPartidaSolo(salida1, entrada1);
+                    }
+
                         salida1.println(jugador.getPuntuacion());
                         if (crearFichero()) {
                             actualizarFichero(nombre,jugador.getPartidasGanadas(),jugador.getPartidasPerdidas());
@@ -45,29 +49,34 @@ public class Partida implements Runnable {
                             crearFichero();
                             actualizarFichero(nombre,jugador.getPartidasGanadas(),jugador.getPartidasPerdidas());
                         }
-                    }
+
 
 
                 } else { // Modo 2 jugadores
                     try (BufferedReader entrada2 = new BufferedReader(new InputStreamReader(jugador2.getInputStream()));
                          PrintWriter salida2 = new PrintWriter(jugador2.getOutputStream(), true))
                     {
-                        salida1.println("Esperando al segundo jugador...");
-                        boolean correcto = true;
-                        String nombre2 = "";
-                        while (correcto) {
-                            salida2.println("Introduce tu nickname: ");
-                            nombre2 = entrada2.readLine();
-                            correcto = false;
 
-                            for (Jugador j : jugadores) { // 2 jugadores no pueden tener el mismo nombre
-                                if (nombre2.equals(j.getNombre())) {
-                                    correcto = true; // El nombre ya está en uso
-                                    salida2.println("No te puedes poner el mismo nombre que tu rival.");
-                                    break;
-                                }
+                        Future<String> pedirNombre1 = executor.submit(() -> pedirNombre(salida1, entrada1));
+
+                        Future<String> pedirNombre2 = executor.submit(() -> pedirNombre(salida2, entrada2));
+
+                        String nombre1 = pedirNombre1.get();
+                        Jugador jugador = new Jugador(nombre1);
+                        jugadores.add(jugador);
+                        String nombre2 = pedirNombre2.get();
+
+                        boolean nombreBien = true;
+                        while (nombreBien) {
+                            if(nombre1.equals(nombre2)){
+                                nombreBien = true;
+                                salida2.println("No puedes tener el mismo nombre que tu rival, ponte otro:");
+                                nombre2 = pedirNombre(salida2, entrada2);
+                            }else{
+                                nombreBien = false;
                             }
                         }
+
                         // Crear el jugador con el nombre válido
                         Jugador jugador02 = new Jugador(nombre2);
                         jugadores.add(jugador02);
@@ -96,11 +105,11 @@ public class Partida implements Runnable {
                                 salida2.println(jugador02.getPuntuacion());
                                 cerrarSocket(jugador2);
                                 if (crearFichero()) {
-                                    actualizarFichero(nombre,jugador.getPartidasGanadas(),jugador.getPartidasPerdidas());
+                                    actualizarFichero(nombre1,jugador.getPartidasGanadas(),jugador.getPartidasPerdidas());
                                     actualizarFichero(nombre2,jugador02.getPartidasGanadas(),jugador02.getPartidasPerdidas());
                                 }else{
                                     crearFichero();
-                                    actualizarFichero(nombre,jugador.getPartidasGanadas(),jugador.getPartidasPerdidas());
+                                    actualizarFichero(nombre1,jugador.getPartidasGanadas(),jugador.getPartidasPerdidas());
                                     actualizarFichero(nombre2,jugador02.getPartidasGanadas(),jugador02.getPartidasPerdidas());
                                 }
                             }
@@ -118,6 +127,13 @@ public class Partida implements Runnable {
             }
             if (jugador2 != null && !jugador2.isClosed()) cerrarSocket(jugador2);
         }
+    }
+
+    private String pedirNombre(PrintWriter salida, BufferedReader entrada) throws IOException {
+        salida.println("Introduce tu nickname: ");
+        String nombre = entrada.readLine();
+        salida.println("Esperando  a tu rival...");
+        return nombre;
     }
 
     private void jugarContraMaquina(PrintWriter salida, BufferedReader entrada, Jugador jugador) throws IOException {

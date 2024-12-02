@@ -25,9 +25,6 @@ public class ClienteAhorcado {
                 if (mensaje.contains("¿Quieres jugar contra la máquina (1), contra otro jugador (2), ver el ranquing (3), ver tu puntuacion (4)?")) {
                     String opcion = teclado.readLine();
                     salida.println(opcion); // Enviar la elección
-                    if ("2".equals(opcion)) {
-                        System.out.println("Esperando al segundo jugador...");
-                    }
                     if ("3".equals(opcion)) {
                         System.out.println("Ranking:");
                     }
@@ -48,13 +45,11 @@ public class ClienteAhorcado {
                     salida.println(nombre);
                 }
 
-                else if (mensaje.contains("¿Quieres jugar otra partida? (s/n)")) {
+                else if (mensaje.contains("¿Quieres jugar otra partida? (s/n)") || mensaje.contains("¿Quieres seguir? (s/n)")) {
                     String respuesta = teclado.readLine();
                     salida.println(respuesta);
                     if ("n".equalsIgnoreCase(respuesta)) {
                         System.out.println("Saliendo del juego. Gracias por jugar.");
-                        mensaje = entrada.readLine();
-                        System.out.println(mensaje);
                         break;
                     }
                 }

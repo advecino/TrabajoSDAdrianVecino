@@ -52,12 +52,24 @@ public class GestionUsuarios implements Runnable{
                     }
                 } else if ("3".equals(opcion)) {
                     mostrarRanking(salida);
-                    usuario.close();
+                    boolean continuar = preguntar(salida,entrada);
+                    if (continuar) {
+                        pool.execute(new GestionUsuarios(usuario));
+                    }else{
+                        usuario.close();
+                    }
+
                 } else if ("4".equals(opcion)) {
                     salida.println("Introduce tu nickname: ");
                     String nombre = entrada.readLine();
                     buscarPuntuacion(nombre, salida);
-                    usuario.close();
+                    boolean continuar = preguntar(salida,entrada);
+                    if (continuar) {
+                        pool.execute(new GestionUsuarios(usuario));
+                    }else{
+                        usuario.close();
+                    }
+
                 } else {
                     salida.println("Opción inválida. Cerrando conexión.");
                     usuario.close();
@@ -68,6 +80,12 @@ public class GestionUsuarios implements Runnable{
                 throw new RuntimeException(e);
             }
         }
+
+    private boolean preguntar(PrintWriter salida, BufferedReader entrada) throws IOException {
+        salida.println("¿Quieres seguir? (s/n)");
+        String respuesta = entrada.readLine().trim().toLowerCase();
+        return "s".equals(respuesta);
+    }
 
         private static void incrementarPartidas() {
             synchronized (partidasTotales) {
