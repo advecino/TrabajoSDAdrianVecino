@@ -50,7 +50,7 @@ public class Partida implements Runnable {
 
                 } else { // Modo 2 jugadores
                     try (BufferedReader entrada2 = new BufferedReader(new InputStreamReader(jugador2.getInputStream()));
-                            PrintWriter salida2 = new PrintWriter(jugador2.getOutputStream(), true))
+                         PrintWriter salida2 = new PrintWriter(jugador2.getOutputStream(), true))
                     {
                         salida1.println("Esperando al segundo jugador...");
                         boolean correcto = true;
