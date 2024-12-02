@@ -359,7 +359,7 @@ public class Partida implements Runnable {
             try {
                 if (archivo.createNewFile()) {
                     System.out.println("El archivo fue creado exitosamente.");
-                    // Escribir la cabecera (si es necesario)
+                    // Escribir la cabecera si es necesario
                     try (BufferedWriter writer = new BufferedWriter(new FileWriter(fichero))) {
                         writer.write("nombre,partidasGanadas,partidasPerdidas");  // Cabecera
                         writer.newLine();  // Nueva línea después del encabezado
