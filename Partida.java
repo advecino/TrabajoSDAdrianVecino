@@ -9,7 +9,6 @@ public class Partida implements Runnable {
     private final List<String> palabras;
     private boolean partidaTerminada;
     private final ExecutorService executor = Executors.newFixedThreadPool(2);
-    private List<Jugador> jugadores = new ArrayList<>();
     private final String  fichero = "estadisticas.csv";
 
     public Partida(Socket jugador1, Socket jugador2, List<String> palabras) {
@@ -35,7 +34,6 @@ public class Partida implements Runnable {
                     salida1.println("Introduce tu nickname: ");
                     String nombre = entrada1.readLine();
                     Jugador jugador = new Jugador(nombre);
-                    jugadores.add(jugador);
                     while(continuar){
 
                         jugarContraMaquina(salida1, entrada1,jugador);
@@ -63,7 +61,6 @@ public class Partida implements Runnable {
 
                         String nombre1 = pedirNombre1.get();
                         Jugador jugador = new Jugador(nombre1);
-                        jugadores.add(jugador);
                         String nombre2 = pedirNombre2.get();
 
                         boolean nombreBien = true;
@@ -79,7 +76,6 @@ public class Partida implements Runnable {
 
                         // Crear el jugador con el nombre válido
                         Jugador jugador02 = new Jugador(nombre2);
-                        jugadores.add(jugador02);
 
                         while(continuar){
                             jugarContraJugador(salida1, entrada1, salida2, entrada2, jugador,jugador02);

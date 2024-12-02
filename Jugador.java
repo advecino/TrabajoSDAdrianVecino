@@ -1,4 +1,4 @@
-// Clase para manejar los deatos de los jugadores
+// Clase para manejar los datos de los jugadores
 
 public class Jugador {
     private final String nombre;

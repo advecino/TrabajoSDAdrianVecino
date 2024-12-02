@@ -36,11 +36,8 @@ public class GestionUsuarios implements Runnable{
                     synchronized (colaJugadores) {
                         colaJugadores.add(usuario);
                         if (colaJugadores.size() >= 2) {
-                            // Emparejar jugadores
-                            // Espera al primer jugador
                             Socket jugador1 = colaJugadores.take();
 
-                            // Espera al segundo jugador
                             Socket jugador2 = colaJugadores.take();
 
                             Partida partida = new Partida(jugador1, jugador2, cargarPalabras());
@@ -98,12 +95,10 @@ public class GestionUsuarios implements Runnable{
 
     private static List<String> cargarPalabras() {
         try {
-            // Intentar leer las palabras del archivo "palabras.txt"
             return Files.readAllLines(Paths.get("palabras.txt"));
         } catch (IOException e) {
             System.err.println("Error al leer el archivo de palabras.");
             e.printStackTrace();
-            // Palabras predeterminadas en caso de error
             return Arrays.asList("ejemplo", "palabra", "java");
         }
     }
@@ -163,11 +158,9 @@ public class GestionUsuarios implements Runnable{
     private static void buscarPuntuacion(String nombre, PrintWriter salida) {
         List<Jugador> jugadores = cargarEstadisticas();
 
-        // Buscamos si el jugador existe en la lista
         boolean encontrado = false;
         for (Jugador jugador : jugadores) {
             if (jugador.getNombre().equalsIgnoreCase(nombre)) {
-                // Si lo encontramos, mostramos sus puntuaciones
                 salida.println(jugador.getPuntuacion());
                 encontrado = true;
                 break;

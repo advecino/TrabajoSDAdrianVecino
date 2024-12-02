@@ -9,7 +9,7 @@ public class ServidorAhorcado {
     public static void main(String[] args) {
         try (ServerSocket serverSocket = new ServerSocket(PUERTO)) {
             System.out.println("Servidor iniciado en el puerto " + PUERTO);
-            while (!Thread.currentThread().isInterrupted()) {
+            while (!Thread.interrupted()) {
             Socket socket = serverSocket.accept();
 
             pool.execute(new GestionUsuarios(socket));

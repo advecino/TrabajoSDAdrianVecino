@@ -21,7 +21,6 @@ public class ClienteAhorcado {
 
                 System.out.println(mensaje);
 
-                // Elegir modo
                 if (mensaje.contains("¿Quieres jugar contra la máquina (1), contra otro jugador (2), ver el ranquing (3), ver tu puntuacion (4)?")) {
                     String opcion = teclado.readLine();
                     salida.println(opcion); // Enviar la elección
@@ -50,6 +49,9 @@ public class ClienteAhorcado {
                     salida.println(respuesta);
                     if ("n".equalsIgnoreCase(respuesta)) {
                         System.out.println("Saliendo del juego. Gracias por jugar.");
+                        if((mensaje = entrada.readLine()) != null){
+                            System.out.println(mensaje);
+                        }
                         break;
                     }
                 }
