@@ -1,12 +1,10 @@
 import java.io.*;
 import java.net.*;
 import java.util.concurrent.*;
-import java.util.*;
 
 public class ServidorAhorcado {
     private static final int PUERTO = 12345;
-    private static ExecutorService pool = Executors.newCachedThreadPool(); // Para manejar hilos de partidas
-    private static List<Socket> clientes = new ArrayList<>();
+    private static ExecutorService pool = Executors.newCachedThreadPool();
 
     public static void main(String[] args) {
         try (ServerSocket serverSocket = new ServerSocket(PUERTO)) {
