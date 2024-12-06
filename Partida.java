@@ -2,14 +2,15 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.logging.Logger;
 
 public class Partida implements Runnable {
     private final Socket jugador1;
     private final Socket jugador2; // Null si es un jugador contra la máquina
     private final List<String> palabras;
-    private boolean partidaTerminada;
     private final ExecutorService executor = Executors.newFixedThreadPool(2);
     private final String  fichero = "estadisticas.csv";
+    private static final Logger LOGGER = Logger.getLogger(Partida.class.getName());
 
     public Partida(Socket jugador1, Socket jugador2, List<String> palabras) {
         this.jugador1 = jugador1;
@@ -38,15 +39,18 @@ public class Partida implements Runnable {
 
                         jugarContraMaquina(salida1, entrada1,jugador);
                         continuar = preguntarSiQuiereJugarOtraPartidaSolo(salida1, entrada1);
+                        if(continuar){
+                            GestionUsuarios.incrementarPartidas();
+                        }
                     }
 
-                        salida1.println(jugador.getPuntuacion());
-                        if (crearFichero()) {
-                            actualizarFichero(nombre,jugador.getPartidasGanadas(),jugador.getPartidasPerdidas());
-                        }else{
-                            crearFichero();
-                            actualizarFichero(nombre,jugador.getPartidasGanadas(),jugador.getPartidasPerdidas());
-                        }
+                    salida1.println(jugador.getPuntuacion());
+                    if (crearFichero()) {
+                        actualizarFichero(nombre,jugador.getPartidasGanadas(),jugador.getPartidasPerdidas());
+                    }else{
+                        crearFichero();
+                        actualizarFichero(nombre,jugador.getPartidasGanadas(),jugador.getPartidasPerdidas());
+                    }
 
 
 
@@ -66,7 +70,6 @@ public class Partida implements Runnable {
                         boolean nombreBien = true;
                         while (nombreBien) {
                             if(nombre1.equals(nombre2)){
-                                nombreBien = true;
                                 salida2.println("No puedes tener el mismo nombre que tu rival, ponte otro:");
                                 nombre2 = pedirNombre(salida2, entrada2);
                             }else{
@@ -100,14 +103,13 @@ public class Partida implements Runnable {
                                 }
                                 salida2.println(jugador02.getPuntuacion());
                                 cerrarSocket(jugador2);
-                                if (crearFichero()) {
-                                    actualizarFichero(nombre1,jugador.getPartidasGanadas(),jugador.getPartidasPerdidas());
-                                    actualizarFichero(nombre2,jugador02.getPartidasGanadas(),jugador02.getPartidasPerdidas());
-                                }else{
+                                if (!crearFichero()) {
                                     crearFichero();
-                                    actualizarFichero(nombre1,jugador.getPartidasGanadas(),jugador.getPartidasPerdidas());
-                                    actualizarFichero(nombre2,jugador02.getPartidasGanadas(),jugador02.getPartidasPerdidas());
                                 }
+                                actualizarFichero(nombre1,jugador.getPartidasGanadas(),jugador.getPartidasPerdidas());
+                                actualizarFichero(nombre2,jugador02.getPartidasGanadas(),jugador02.getPartidasPerdidas());
+                            }else{
+                                GestionUsuarios.incrementarPartidas();
                             }
                         }
                     } catch (ExecutionException | InterruptedException e) {
@@ -116,7 +118,8 @@ public class Partida implements Runnable {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.severe("Se produjo una excepción: " + e.getMessage());
+            LOGGER.throwing(Partida.class.getName(), "run", e);
         } finally {
             if(!jugador1.isClosed()){
                 cerrarSocket(jugador1);
@@ -156,19 +159,10 @@ public class Partida implements Runnable {
                 continue;
             }
 
-            boolean acierto = false;
-            for (int i = 0; i < palabra.length(); i++) {
-                if (palabra.charAt(i) == letra.charAt(0)) {
-                    tablero[i] = letra.charAt(0);
-                    acierto = true;
-                }
-            }
-
-            if (!acierto) intentos--;
+            intentos = actualizarTablero(palabra, tablero, intentos, letra);
 
             if (String.valueOf(tablero).equals(palabra)) {
                 salida.println("¡Felicidades, has ganado! La palabra era: " + palabra);
-                setPartidaTerminada(true);
                 jugador.ganarPartida();
                 return;
             }
@@ -178,6 +172,19 @@ public class Partida implements Runnable {
         jugador.perderPartida();
         salida.println("¡Has perdido! La palabra era: " + palabra);
 
+    }
+
+    private int actualizarTablero(String palabra, char[] tablero, int intentos, String letra) {
+        boolean acierto = false;
+        for (int i = 0; i < palabra.length(); i++) {
+            if (palabra.charAt(i) == letra.charAt(0)) {
+                tablero[i] = letra.charAt(0);
+                acierto = true;
+            }
+        }
+
+        if (!acierto) intentos--;
+        return intentos;
     }
 
     private void jugarContraJugador(PrintWriter salida1, BufferedReader entrada1, PrintWriter salida2, BufferedReader entrada2,Jugador jugador1, Jugador jugador2) throws IOException {
@@ -207,23 +214,13 @@ public class Partida implements Runnable {
             }
 
             salida1.println("Letra recibida por el jugador 2: " + letra);
-            boolean acierto = false;
-
-            for (int i = 0; i < palabra.length(); i++) {
-                if (palabra.charAt(i) == letra.charAt(0)) {
-                    tablero[i] = letra.charAt(0);
-                    acierto = true;
-                }
-            }
-
-            if (!acierto) intentos--;
+            intentos = actualizarTablero(palabra, tablero, intentos, letra);
 
             if (String.valueOf(tablero).equals(palabra)) {
                 salida2.println("¡Felicidades, has ganado! La palabra era: " + palabra);
                 jugador2.ganarPartida();
                 salida1.println("Tu rival ha ganado.");
                 jugador1.perderPartida();
-                setPartidaTerminada(true);
                 return;
             }
         }
@@ -252,7 +249,8 @@ public class Partida implements Runnable {
         try {
             if (socket != null) socket.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.severe("Se produjo una excepción: " + e.getMessage());
+            LOGGER.throwing(Partida.class.getName(), "cerrarSocket", e);
         }
     }
 
@@ -331,11 +329,6 @@ public class Partida implements Runnable {
 
 
 
-    public void setPartidaTerminada(boolean partidaTerminada) {
-        this.partidaTerminada = partidaTerminada;
-    }
-
-
     private boolean preguntarSiQuiereJugarOtraPartida(PrintWriter salida, BufferedReader entrada) throws IOException {
         salida.println("¿Quieres jugar otra partida? (s/n)");
         String respuesta = entrada.readLine().trim().toLowerCase();
@@ -370,7 +363,8 @@ public class Partida implements Runnable {
                     return false;
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                LOGGER.severe("Se produjo una excepción: " + e.getMessage());
+                LOGGER.throwing(Partida.class.getName(), "crearFichero", e);
                 return false;
             }
         } else {
@@ -404,7 +398,8 @@ public class Partida implements Runnable {
                 lineas.add(linea);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.severe("Se produjo una excepción: " + e.getMessage());
+            LOGGER.throwing(Partida.class.getName(), "actualizarFichero", e);
             System.out.println("Hubo un problema al leer el archivo.");
         }
 
@@ -430,7 +425,8 @@ public class Partida implements Runnable {
             }
             System.out.println("Archivo actualizado correctamente.");
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.severe("Se produjo una excepción: " + e.getMessage());
+            LOGGER.throwing(Partida.class.getName(), "actualizarFichero", e);
             System.out.println("Hubo un problema al escribir en el archivo.");
         }
     }

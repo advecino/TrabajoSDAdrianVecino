@@ -1,7 +1,9 @@
 import java.io.*;
 import java.net.*;
+import java.util.logging.Logger;
 
 public class ClienteAhorcado {
+    private static final Logger LOGGER = Logger.getLogger(ClienteAhorcado.class.getName());
     private static final String HOST = "localhost";
     private static final int PUERTO = 12345;
 
@@ -15,9 +17,7 @@ public class ClienteAhorcado {
 
             String mensaje;
             while ((mensaje = entrada.readLine()) != null) {
-                if (mensaje.trim().isEmpty()) {
-                    continue; // Ignorar mensajes vacíos
-                }
+
 
                 System.out.println(mensaje);
 
@@ -29,19 +29,9 @@ public class ClienteAhorcado {
                     }
                 }
 
-                else if (mensaje.contains("Jugador 1, ingresa la palabra:")) {
+                else if (mensaje.contains("Jugador 1, ingresa la palabra:") || mensaje.contains("Ingresa una letra:") || mensaje.contains("Introduce tu nickname: "))  {
                     String palabra = teclado.readLine();
-                    salida.println(palabra); // Enviar longitud al servidor
-                }
-
-                else if (mensaje.contains("Ingresa una letra:")) {
-                    String letra = teclado.readLine();
-                    salida.println(letra); // Enviar la letra al servidor
-                }
-
-                else if (mensaje.contains("Introduce tu nickname: ")) {
-                    String nombre = teclado.readLine();
-                    salida.println(nombre);
+                    salida.println(palabra);
                 }
 
                 else if (mensaje.contains("¿Quieres jugar otra partida? (s/n)") || mensaje.contains("¿Quieres seguir? (s/n)")) {
@@ -54,12 +44,14 @@ public class ClienteAhorcado {
                         }
                         break;
                     }
+
                 }
 
             }
 
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            LOGGER.severe("Se produjo una excepción: " + e.getMessage());
+            LOGGER.throwing(ClienteAhorcado.class.getName(), "main", e);
         }
     }
 }

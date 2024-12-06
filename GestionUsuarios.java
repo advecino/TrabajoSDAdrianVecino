@@ -4,35 +4,40 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.concurrent.*;
 import java.util.*;
+import java.util.logging.Logger;
 
 
 public class GestionUsuarios implements Runnable{
-    private Socket usuario;
-    private static BlockingQueue<Socket> colaJugadores = new LinkedBlockingQueue<>();
-    private static Integer partidasTotales = 0;
+    private final Socket usuario;
+    private static final BlockingQueue<Socket> colaJugadores = new LinkedBlockingQueue<>();
+    private static final Object lock = new Object(); // Objeto dedicado para sincronización
+    private static volatile int partidasTotales = 0;
     private static final String  fichero = "estadisticas.csv";
-    private static ExecutorService pool = Executors.newCachedThreadPool();
+    private static final ExecutorService pool = Executors.newCachedThreadPool();
+    private static final Logger LOGGER = Logger.getLogger(GestionUsuarios.class.getName());
+
 
     public GestionUsuarios(Socket socket){
         this.usuario = socket;
     }
 
-        @Override
-        public void run() {
-            try {
-                BufferedReader entrada = new BufferedReader(new InputStreamReader(usuario.getInputStream()));
-                PrintWriter salida = new PrintWriter(usuario.getOutputStream(), true);
+    @Override
+    public void run() {
+        try {
+            BufferedReader entrada = new BufferedReader(new InputStreamReader(usuario.getInputStream()));
+            PrintWriter salida = new PrintWriter(usuario.getOutputStream(), true);
 
-                salida.println("¿Quieres jugar contra la máquina (1), contra otro jugador (2), ver el ranquing (3), ver tu puntuacion (4)?");
-                String opcion = entrada.readLine();
+            salida.println("¿Quieres jugar contra la máquina (1), contra otro jugador (2), ver el ranquing (3), ver tu puntuacion (4)?");
+            String opcion = entrada.readLine();
 
-                if ("1".equals(opcion)) {
+            switch (opcion) {
+                case "1" -> {
                     // Lógica para jugar contra la máquina
                     Partida partida = new Partida(usuario, null, cargarPalabras());
                     incrementarPartidas();
                     pool.execute(partida);
-
-                } else if ("2".equals(opcion)) {
+                }
+                case "2" -> {
                     synchronized (colaJugadores) {
                         colaJugadores.add(usuario);
                         if (colaJugadores.size() >= 2) {
@@ -47,36 +52,41 @@ public class GestionUsuarios implements Runnable{
                             salida.println("Esperando a otro jugador...");
                         }
                     }
-                } else if ("3".equals(opcion)) {
+                }
+                case "3" -> {
                     mostrarRanking(salida);
-                    boolean continuar = preguntar(salida,entrada);
+                    boolean continuar = preguntar(salida, entrada);
                     if (continuar) {
                         pool.execute(new GestionUsuarios(usuario));
-                    }else{
+                    } else {
                         usuario.close();
                     }
 
-                } else if ("4".equals(opcion)) {
+                }
+                case "4" -> {
                     salida.println("Introduce tu nickname: ");
                     String nombre = entrada.readLine();
                     buscarPuntuacion(nombre, salida);
-                    boolean continuar = preguntar(salida,entrada);
+                    boolean continuar = preguntar(salida, entrada);
                     if (continuar) {
                         pool.execute(new GestionUsuarios(usuario));
-                    }else{
+                    } else {
                         usuario.close();
                     }
 
-                } else {
+                }
+                case null, default -> {
                     salida.println("Opción inválida. Cerrando conexión.");
                     usuario.close();
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
             }
+        } catch (IOException e) {
+            LOGGER.severe("Se produjo una excepción: " + e.getMessage());
+            LOGGER.throwing(GestionUsuarios.class.getName(), "run", e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
+    }
 
     private boolean preguntar(PrintWriter salida, BufferedReader entrada) throws IOException {
         salida.println("¿Quieres seguir? (s/n)");
@@ -84,12 +94,12 @@ public class GestionUsuarios implements Runnable{
         return "s".equals(respuesta);
     }
 
-        private static void incrementarPartidas() {
-            synchronized (partidasTotales) {
-                partidasTotales++;
-                System.out.println("Número de partidas: " + partidasTotales);
-            }
+    public static void incrementarPartidas() {
+        synchronized (lock) {
+            partidasTotales++;
+            System.out.println("Número de partidas: " + partidasTotales);
         }
+    }
 
 
 
@@ -98,7 +108,8 @@ public class GestionUsuarios implements Runnable{
             return Files.readAllLines(Paths.get("palabras.txt"));
         } catch (IOException e) {
             System.err.println("Error al leer el archivo de palabras.");
-            e.printStackTrace();
+            LOGGER.severe("Se produjo una excepción: " + e.getMessage());
+            LOGGER.throwing(ClienteAhorcado.class.getName(), "cargarPalabras", e);
             return Arrays.asList("ejemplo", "palabra", "java");
         }
     }
@@ -130,7 +141,8 @@ public class GestionUsuarios implements Runnable{
                     }
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                LOGGER.severe("Se produjo una excepción: " + e.getMessage());
+                LOGGER.throwing(ClienteAhorcado.class.getName(), "cargarEstadisticas", e);
             }
         }
         return jugadores;
@@ -140,15 +152,14 @@ public class GestionUsuarios implements Runnable{
 
     private static void mostrarRanking(PrintWriter salida) {
         List<Jugador> jugadores = cargarEstadisticas();  // Cargar las estadísticas del archivo
-        if (jugadores != null && !jugadores.isEmpty()) {
+        if (!jugadores.isEmpty()) {
             // Ordenar de mayor las partidas ganadas
             jugadores.sort(Comparator.comparingInt(Jugador::getPartidasGanadas).reversed());
 
-            System.out.println("Ranking de los mejores jugadores:");
+            System.out.println("Mostrando ranking de los mejores jugadores.");
             for (int i = 0; i < Math.min(5, jugadores.size()); i++) {
                 Jugador j = jugadores.get(i);
                 salida.println((i + 1) + ". " + j.getNombre() + " - " + j.getPartidasGanadas() + " partidas ganadas");
-                System.out.println((i + 1) + ". " + j.getNombre() + " - " + j.getPartidasGanadas() + " partidas ganadas");
             }
         } else {
             System.out.println("No hay estadísticas disponibles.");
