@@ -1,4 +1,6 @@
-// Clase para manejar los datos de los jugadores
+package src;// Clase para manejar los datos de los jugadores
+
+// Autor: Adrián Vecino Durán
 
 public class Jugador {
     private final String nombre;
@@ -43,7 +45,7 @@ public class Jugador {
 
     // Mostrar la puntuación
     public String getPuntuacion() {
-        return nombre + ", tus puntuaciones son: " +
+        return nombre + ", has conseguido: " +
                 partidasGanadas + " " + (partidasGanadas == 1 ? "partida ganada" : "partidas ganadas") + " y " +
                 partidasPerdidas + " " + (partidasPerdidas == 1 ? "partida perdida" : "partidas perdidas");
 

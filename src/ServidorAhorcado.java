@@ -1,3 +1,7 @@
+package src;
+
+// Autor: Adrián Vecino Durán
+
 import java.io.*;
 import java.net.*;
 import java.util.concurrent.*;

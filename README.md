@@ -23,7 +23,8 @@ Además, el servidor:
 
 ## Cómo usarlo
 
-### 1. Requisitos previos
+### 1. Requisitos 
 - Clonar este repositorio:
   ```bash
   https://github.com/advecino/TrabajoSDAdrianVecino
+  
