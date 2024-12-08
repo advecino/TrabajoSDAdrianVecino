@@ -1,5 +1,3 @@
-package src;
-
 // Autor: Adrián Vecino Durán
 
 import java.io.*;

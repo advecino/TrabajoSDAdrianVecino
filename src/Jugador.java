@@ -1,4 +1,4 @@
-package src;// Clase para manejar los datos de los jugadores
+// Clase para manejar los datos de los jugadores
 
 // Autor: Adrián Vecino Durán
 
